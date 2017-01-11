@@ -5,12 +5,24 @@ import {
   NavigatorIOS,
   TouchableHighlight,
   ListView,
+  AlertIOS,
   Image,
   View
 } from 'react-native';
 import styles from './styles.js'
 import MealDetail from '../Common/MealDetail.js'
-export default class LibraryList extends Component {
+import firebase from 'firebase'
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDXFXVYCirwgTnUIW98wMF5s52bI6AahDo",
+    authDomain: "foodtracker-4c72f.firebaseapp.com",
+    databaseURL: "https://foodtracker-4c72f.firebaseio.com",
+    storageBucket: "foodtracker-4c72f.appspot.com",
+    messagingSenderId: "23826452842"
+  };
+const firebaseApp = firebase.initializeApp(firebaseConfig);
+
+export default class IngredientsList extends Component {
 
 constructor(props){
   super(props)
@@ -23,7 +35,30 @@ constructor(props){
     this.state = {
       dataSource: mealBlob.cloneWithRowsAndSections(this.dayMeal(meals))
     }
+    this.itemsRef = this.getRef().child('items');
 }
+
+getRef() {
+   return firebaseApp.database().ref();
+ }
+
+_addItem() {
+    AlertIOS.prompt(
+      'Add New Item',
+      null,
+      [
+        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {
+          text: 'Add',
+          onPress: (text) => {
+            this.itemsRef.push({ title: text })
+          }
+        },
+      ],
+      'plain-text'
+    );
+  }
+
 dayMeal(meals){
   var typeMap = {};
   meals.forEach(function(mealItem) {
@@ -40,34 +75,22 @@ dayMeal(meals){
 
 }
 
-showMealDetail(rowData){
-  this.props.navigator.push({
-
-    component: MealDetail,
-    passProps: {rowData}
-  });
-}
 
 
-  renderSectionHeader(sectionData,type){
-    return(
-      <Text style={styles.daySection}>
-      {type}
-      </Text>
-    )
-  }
+
   renderRow(rowData, sectionID, rowID){
+    contents = rowData.meal.ingredients.map(function (item) {
+        return (
+          <View>
+            <Text>{item.name}</Text>
+          </View>
+        );
+     });
     return(
-<TouchableHighlight onPress={() => this.showMealDetail(rowData)} underlayColor='#dddddd'>
+<TouchableHighlight >
       <View>
-
-      <Text style={styles.day}>
-             {rowData.meal.title}
-      </Text>
+      {contents}
       <View style={styles.container}>
-
-      <Image source={{uri: rowData.meal.image}}
-        style={styles.thumbnail}/>
       </View>
 
       <View style={styles.separator}>
@@ -79,11 +102,21 @@ showMealDetail(rowData){
   }
   render() {
     return (
+      <View>
     <ListView
     dataSource={this.state.dataSource}
     renderRow={this.renderRow.bind(this)}
-    renderSectionHeader={this.renderSectionHeader.bind(this)}
     />
+    <TouchableHighlight
+    onPress={this._addItem.bind(this)}>
+    <View>
+    <Text>
+    button
+    </Text>
+    </View>
+
+      </TouchableHighlight>
+    </View>
     );
   }
 }

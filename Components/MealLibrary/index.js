@@ -25,15 +25,3 @@ export default class MealLibrary extends Component {
   );
 }
 }
-
-class LibraryListw extends Component{
-   render() {
-    return (
-      <View >
-           <Text style={styles.description}>
-             This is the ActivityView
-           </Text>
-         </View>
-    );
-  }
-}

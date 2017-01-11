@@ -6,10 +6,10 @@ import {
   TouchableHighlight,
   ListView,
   AlertIOS,
+  Image,
   View
 } from 'react-native';
 import styles from './styles.js'
-
 import MealDetail from '../Common/MealDetail.js'
 import firebase from 'firebase'
 
@@ -21,61 +21,6 @@ const firebaseConfig = {
     messagingSenderId: "23826452842"
   };
 const firebaseApp = firebase.initializeApp(firebaseConfig);
-export default class GroceryList extends Component {
-  constructor(props) {
-      super(props);
-
-      this.itemsRef = this.getRef().child('new');
-    }
-
-    getRef() {
-      return firebaseApp.database().ref();
-    }
-
-
-  _addItem() {
-    AlertIOS.prompt(
-      'Add New Item',
-      null,
-      [
-        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-        {
-          text: 'Add new Food',
-          onPress: (text) => {
-            this.itemsRef.push({
-              title: text,
-              ingredients: 'pasta'
-            })
-          }
-        },
-      ],
-      'plain-text'
-    );
-  }
-  render() {
-    return (
-      <NavigatorIOS
-      style={styles.nav}
-      initialRoute={{
-        title: 'Grocery List',
-        component: GroceryFoodList,
-        rightButtonTitle: 'Add',
-        onRightButtonPress: this._addItem.bind(this),
-        leftButtonTitle: 'Logout'
-      }}
-      />
-
-    );
-  }
-}
-
-class GroceryFoodList extends Component {
-  render() {
-    return (
-<IngredientsList/>
-    );
-  }
-}
 
 class ListItem extends Component {
   render() {
@@ -103,7 +48,7 @@ class ActionButton extends Component {
     );
   }
 }
-class IngredientsList extends Component {
+export default class IngredientsList extends Component {
 
   constructor(props) {
       super(props);

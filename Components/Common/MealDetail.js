@@ -16,11 +16,19 @@ import {
 
 export default class MealDetail extends Component {
   render() {
+
        var rowData = this.props.rowData;
        var title = (typeof rowData.meal.title !== 'undefined') ? rowData.meal.title : '';
        var imageURI = (typeof rowData.meal.image !== 'undefined') ? rowData.meal.image : '';
        var description = (typeof rowData.meal.description !== 'undefined') ? rowData.meal.description : '';
-       var ingredients = (typeof rowData.meal.ingredients !== 'undefined') ? rowData.meal.ingredients : '';
+
+       contents = rowData.meal.ingredients.map(function (item) {
+           return (
+             <View>
+               <Text>{item.name}</Text>
+             </View>
+           );
+        });
       return(
         <View style={styles.container}>
         <Text style={styles.title}>
@@ -33,9 +41,9 @@ export default class MealDetail extends Component {
           <Text style={styles.ingredientsTitle}>
           Ingredients
           </Text>
-          <Text>
-          {ingredients}
-          </Text>
+          <View>
+            {contents}
+          </View>
         </View>
       )
 }
