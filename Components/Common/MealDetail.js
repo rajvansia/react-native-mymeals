@@ -12,9 +12,17 @@ import {
   NavigatorIOS,
   View,
 } from 'react-native';
-
-
+import fireApp from '../../firebase.js'
 export default class MealDetail extends Component {
+  constructor(props) {
+      super(props);
+
+      this.itemsRef = this.getRef().child('new');
+    }
+
+    getRef() {
+      return firebaseApp.database().ref();
+    }
   render() {
 
        var rowData = this.props.rowData;

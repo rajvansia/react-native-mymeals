@@ -10,66 +10,89 @@ import {
 } from 'react-native';
 import styles from './styles.js'
 import MealDetail from '../Common/MealDetail.js'
+import fireApp from '../../firebase.js'
+
 export default class LibraryList extends Component {
+  constructor(props) {
+      super(props);
+      this.state = {
+        dataSource: new ListView.DataSource({
+          rowHasChanged: (row1, row2) => row1 !== row2
+        })
+      };
+      this.itemsRef = this.getRef().child('meals');
+      this.starCountRef = this.getRef().child('meals');
 
-constructor(props){
-  super(props)
-    const mealBlob = new ListView.DataSource({
-      rowHasChanged: (r1,r2)=> r1 !== r2,
-      sectionHeaderHasChanged: (s1, s2) => s1 !== s2
-
-    })
-    var meals = MEAL_DATA;
-    this.state = {
-      dataSource: mealBlob.cloneWithRowsAndSections(this.dayMeal(meals))
-    }
-}
-dayMeal(meals){
-  var typeMap = {};
-  meals.forEach(function(mealItem) {
-    if (!typeMap[mealItem.meal.type]) {
-
-      typeMap[mealItem.meal.type] = [];
     }
 
-    typeMap[mealItem.meal.type].push(mealItem);
+    getRef() {
+      return fireApp.ref();
+    }
 
-  });
+    listenForItems(itemsRef) {
+      itemsRef.on('value', (snap) => {
 
-  return typeMap;
+        // get children as an array
+        var meals = [];
+        snap.forEach((child) => {
+          meals.push({
+            title: child.val().title,
+            day: child.val().day,
+            image: child.val().image,
+            cuisine: child.val().cuisine,
 
-}
+            _key: child.key
+          });
+        });
 
-showMealDetail(rowData){
-  this.props.navigator.push({
+        this.setState({
 
-    component: MealDetail,
-    passProps: {rowData}
-  });
-}
+            dataSourcej: this.state.dataSource.cloneWithRows(meals)
+        });
 
 
-  renderSectionHeader(sectionData,type){
-    return(
-      <Text style={styles.daySection}>
-      {type}
-      </Text>
-    )
-  }
+      });
+    }
+
+    listenItems(starCountRef) {
+      starCountRef.on('value', (snap) => {
+
+        // get children as an array
+        var ing = [];
+        snap.forEach((child) => {
+          ing.push({
+            day: child.val().day,
+            _key: child.key,
+            recipes: child.val().recipes,
+
+          });
+        });
+        this.setState({
+
+            dataSource: this.state.dataSource.cloneWithRows(ing)
+        });
+
+      });
+    }
+
+    componentDidMount() {
+      this.listenForItems(this.itemsRef);
+      this.listenItems(this.starCountRef);
+    }
+
   renderRow(rowData, sectionID, rowID){
-    return(
-<TouchableHighlight onPress={() => this.showMealDetail(rowData)} underlayColor='#dddddd'>
-      <View>
 
+    return(
+      <TouchableHighlight >
+      <View>
       <Text style={styles.day}>
-             {rowData.meal.title}
+
+             {rowData._key}
+             {rowData.day}
+
       </Text>
       <View style={styles.container}>
-
-      <Image source={{uri: rowData.meal.image}}
-        style={styles.thumbnail}/>
       </View>
-
       <View style={styles.separator}>
       </View>
 
@@ -82,10 +105,8 @@ showMealDetail(rowData){
     <ListView
     dataSource={this.state.dataSource}
     renderRow={this.renderRow.bind(this)}
-    renderSectionHeader={this.renderSectionHeader.bind(this)}
+
     />
     );
   }
 }
-
-var MEAL_DATA = [ {meal: {title:'Pasta Primiavera', description: 'scrumptious pasta sacue with tomato and basil', image:'https://www.veggiessavetheday.com/wp-content/uploads/2016/11/Creamy-Sundried-Tomato-Pasta-for-two.jpg', ingredients:[{name:'pasta'},{name:'tomato sauce'},{name: 'basil'}], day: 'Monday', type: 'Italian'}},{meal: {title:'Mushroom soup', description: 'wholesome mushroom soup', image:'https://damndelicious.net/wp-content/uploads/2014/05/IMG_9223edit.jpg', ingredients:[{name:'mushroom'},{name:'paprika'},{name: 'rosemary'}],day:'Monday',type:'American'}},{meal: {title:'Loaded Sweet Potato', description: 'Loaded Sweet Potato with bbq sauce', image:'https://karalydon.com/wp-content/uploads/2014/10/Vegan-Loaded-Sweet-Potato-3.jpg', ingredients:[{name:'sweet potato'},{name:'bbq sauce'},{name: 'avacado'}], day:'Tuesday', type:'American'}},{meal: {title:'Dosa', description: 'Like an Indian spicy pancake', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Masala_Dosa_as_served_in_Tamil_Nadu%2CIndia.JPG/1024px-Masala_Dosa_as_served_in_Tamil_Nadu%2CIndia.JPG', ingredients:[{name:'potato'},{name:'dosa'},{name:'chutney'}], day:'Wednesday', type: 'Indian'}}]

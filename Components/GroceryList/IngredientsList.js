@@ -11,16 +11,7 @@ import {
 } from 'react-native';
 import styles from './styles.js'
 import MealDetail from '../Common/MealDetail.js'
-import firebase from 'firebase'
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDXFXVYCirwgTnUIW98wMF5s52bI6AahDo",
-    authDomain: "foodtracker-4c72f.firebaseapp.com",
-    databaseURL: "https://foodtracker-4c72f.firebaseio.com",
-    storageBucket: "foodtracker-4c72f.appspot.com",
-    messagingSenderId: "23826452842"
-  };
-const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 class ListItem extends Component {
   render() {

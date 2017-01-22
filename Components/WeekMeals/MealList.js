@@ -10,21 +10,47 @@ import {
 } from 'react-native';
 import styles from './styles.js'
 import MealDetail from '../Common/MealDetail.js'
-
+import fireApp from '../../firebase.js'
 export default class MealList extends Component {
-
-constructor(props){
-  super(props)
-    const mealBlob = new ListView.DataSource({
-      rowHasChanged: (r1,r2)=> r1 !== r2,
-      sectionHeaderHasChanged: (s1, s2) => s1 !== s2
-
-    })
-    var meals = MEAL_DATA;
-    this.state = {
-      dataSource: mealBlob.cloneWithRowsAndSections(this.dayMeal(meals))
+  constructor(props) {
+      super(props);
+      this.state = {
+        dataSource: new ListView.DataSource({
+          rowHasChanged: (row1, row2) => row1 !== row2,
+          sectionHeaderHasChanged: (s1, s2) => s1 !== s2
+        })
+      };
+      this.itemsRef = this.getRef().child('recipes');
     }
-}
+
+    getRef() {
+      return fireApp.ref();
+    }
+    listenForItems(itemsRef) {
+      itemsRef.on('value', (snap) => {
+
+        // get children as an array
+        var meals = [];
+        snap.forEach((child) => {
+          meals.push({
+            title: child.val().title,
+            day: child.val().day,
+            image: child.val().image,
+            cuisine: child.val().cuisine,
+            _key: child.key
+          });
+        });
+
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRowsAndSections(this.dayMeal(meals))
+        });
+
+      });
+    }
+
+    componentDidMount() {
+      this.listenForItems(this.itemsRef);
+    }
 
 showMealDetail(rowData){
   this.props.navigator.push({
@@ -37,12 +63,12 @@ showMealDetail(rowData){
 dayMeal(meals){
   var dayMap = {};
   meals.forEach(function(mealItem) {
-    if (!dayMap[mealItem.meal.day]) {
+    if (!dayMap[mealItem.day]) {
 
-      dayMap[mealItem.meal.day] = [];
+      dayMap[mealItem.day] = [];
     }
 
-    dayMap[mealItem.meal.day].push(mealItem);
+    dayMap[mealItem.day].push(mealItem);
 
   });
 
@@ -62,12 +88,14 @@ dayMeal(meals){
       <TouchableHighlight onPress={() => this.showMealDetail(rowData)} underlayColor='#dddddd'>
       <View>
       <Text style={styles.day}>
-             {rowData.meal.title}
+             {rowData.title}
       </Text>
       <View style={styles.container}>
 
-      <Image source={{uri: rowData.meal.image}}
-        style={styles.thumbnail}/>
+      <Image source={{uri: rowData.image}}
+             style={styles.thumbnail}/>
+
+
       </View>
       <View style={styles.separator}>
       </View>

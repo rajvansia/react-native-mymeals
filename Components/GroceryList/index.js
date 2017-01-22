@@ -5,61 +5,48 @@ import {
   NavigatorIOS,
   TouchableHighlight,
   ListView,
+  TextInput,
   AlertIOS,
   View
 } from 'react-native';
 import styles from './styles.js'
-
-import MealDetail from '../Common/MealDetail.js'
 import firebase from 'firebase'
+import MealDetail from '../Common/MealDetail.js'
+import MyMeals from '../../index.ios.js'
+import fireApp from '../../firebase.js'
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDXFXVYCirwgTnUIW98wMF5s52bI6AahDo",
-    authDomain: "foodtracker-4c72f.firebaseapp.com",
-    databaseURL: "https://foodtracker-4c72f.firebaseio.com",
-    storageBucket: "foodtracker-4c72f.appspot.com",
-    messagingSenderId: "23826452842"
-  };
-const firebaseApp = firebase.initializeApp(firebaseConfig);
 export default class GroceryList extends Component {
+  getRef() {
+    return fireApp.ref();
+  }
   constructor(props) {
       super(props);
-
-      this.itemsRef = this.getRef().child('new');
+      this.state = {
+      add:'bigwo'}
+      this.itemsRef = this.getRef().child('recipes');
     }
 
-    getRef() {
-      return firebaseApp.database().ref();
-    }
+
 
 
   _addItem() {
-    AlertIOS.prompt(
-      'Add New Item',
-      null,
-      [
-        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-        {
-          text: 'Add new Food',
-          onPress: (text) => {
-            this.itemsRef.push({
-              title: text,
-              ingredients: 'pasta'
-            })
-          }
-        },
-      ],
-      'plain-text'
-    );
+    this.refs.nav.push({
+     component: GroceryList,
+     title: 'Genius',
+     passProps: { myProp: 'genius',
+     rightButtonTitle: "pok",
+     onRightButtonPress: this._addItem.bind(this), },
+   });
   }
   render() {
     return (
       <NavigatorIOS
+      ref='nav'
       style={styles.nav}
       initialRoute={{
-        title: 'Grocery List',
+        title: this.state.add,
         component: GroceryFoodList,
-        rightButtonTitle: 'Add',
+        rightButtonTitle: this.state.add,
         onRightButtonPress: this._addItem.bind(this),
         leftButtonTitle: 'Logout'
       }}
@@ -82,8 +69,8 @@ class ListItem extends Component {
     return (
       <TouchableHighlight onPress={this.props.onPress}>
         <View >
-          <Text>{this.props.item.title}</Text>
-          <Text>{this.props.item.ingredients}</Text>
+          <Text style={styles.description}>{this.props.item.title}</Text>
+          <Text>{this.props.item.cuisine}</Text>
         </View>
       </TouchableHighlight>
     );
@@ -112,11 +99,11 @@ class IngredientsList extends Component {
           rowHasChanged: (row1, row2) => row1 !== row2,
         })
       };
-      this.itemsRef = this.getRef().child('items');
+      this.itemsRef = this.getRef().child('recipes');
     }
 
     getRef() {
-      return firebaseApp.database().ref();
+      return fireApp.ref();
     }
 
     listenForItems(itemsRef) {
@@ -127,7 +114,7 @@ class IngredientsList extends Component {
         snap.forEach((child) => {
           items.push({
             title: child.val().title,
-            ingredients: child.val().ingredients,
+            cuisine: child.val().cuisine,
             _key: child.key
           });
         });
@@ -147,7 +134,16 @@ class IngredientsList extends Component {
   render() {
     return (
       <View style={styles.container}>
-
+      <TextInput
+            style={{height: 40, borderColor: 'black', borderWidth: 1, margin:10, marginTop:90}}
+            onSubmitEditing={(event) => this.itemsRef.push({ title: event.nativeEvent.text})}
+            value={this.state.text}
+          />
+          <TextInput
+                style={{height: 40, borderColor: 'black', borderWidth: 1, margin:10}}
+                onSubmitEditing={(event) => this.itemsRef.push({ cuisine: event.nativeEvent.text})}
+                value={this.state.text}
+              />
 
 
         <ListView
